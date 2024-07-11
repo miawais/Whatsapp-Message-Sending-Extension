@@ -1,4 +1,4 @@
-from flask import Flask, renderTemplate, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -12,7 +12,7 @@ driver = None
 
 @app.route('/')
 def index():
-    return renderTemplate('index.html')
+    return render_template('index.html')
 
 @app.route('/login', methods=['POST'])
 def login():

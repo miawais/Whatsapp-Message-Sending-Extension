@@ -7,6 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     background: linear-gradient(135deg, #80d4ff, #1c8adb);
+    overflow: hidden;
 }
 
 .container {
@@ -17,11 +18,13 @@ body {
     text-align: center;
     width: 90%;
     max-width: 500px;
+    position: relative;
 }
 
 h1 {
     margin-bottom: 20px;
     font-size: 24px;
+    color: #333;
 }
 
 button {
@@ -33,11 +36,12 @@ button {
     cursor: pointer;
     font-size: 16px;
     margin-top: 20px;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
     background-color: #128C7E;
+    transform: scale(1.05);
 }
 
 textarea {
@@ -55,6 +59,7 @@ label {
     font-weight: bold;
     display: block;
     text-align: left;
+    color: #333;
 }
 
 #status {
@@ -63,11 +68,11 @@ label {
     color: #555;
 }
 
-#login-screen, #message-screen {
+.login-screen, .message-screen {
     position: relative;
 }
 
-#login-screen::before, #message-screen::before {
+.login-screen::before, .message-screen::before {
     content: "";
     position: absolute;
     top: 0;
