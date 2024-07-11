@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Message Sender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-screen" id="login-screen">
+            <h1>Login with WhatsApp</h1>
+            <button id="login-button" onclick="login()">Login to WhatsApp</button>
+            <p id="status">Waiting for WhatsApp Login...</p>
+        </div>
+        <div class="message-screen" id="message-screen" style="display: none;">
+            <h1>Send WhatsApp Messages</h1>
+            <label for="groups">Group Names (one per line):</label>
+            <textarea id="groups" rows="10"></textarea>
+            <label for="message">Message:</label>
+            <textarea id="message" rows="5"></textarea>
+            <button onclick="sendMessage()">Send Message</button>
+        </div>
+    </div>
+    <script>
+        async function login() {
+            const response = await fetch('/login', { method: 'POST' });
+            const result = await response.json();
+            if (result.status === 'waiting') {
+                document.getElementById('status').innerText = 'Waiting for WhatsApp Login...';
+                checkLogin();
+            }
+        }
+
+        async function checkLogin() {
+            const response = await fetch('/check_login', { method: 'POST' });
+            const result = await response.json();
+            if (result.status === 'logged_in') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('message-screen').style.display = 'block';
+            } else {
+                setTimeout(checkLogin, 2000);
+            }
+        }
+
+        async function sendMessage() {
+            const groups = document.getElementById('groups').value.split('\n').filter(line => line.trim() !== '');
+            const message = document.getElementById('message').value;
+            const response = await fetch('/send_message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ groups, message })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                alert('Messages sent successfully!');
+            }
+        }
+    </script>
+</body>
+</html>
