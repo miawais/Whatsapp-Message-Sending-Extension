@@ -9,12 +9,12 @@
 </head>
 <body>
     <div class="container">
-        <div id="login-section" {% if logged_in %}style="display: none;"{% endif %}>
+        <div id="login-section">
             <h1>Login to WhatsApp</h1>
             <p id="login-status">Click below to login to WhatsApp</p>
             <button id="login-button" onclick="openWhatsAppWeb()">Login to WhatsApp</button>
         </div>
-        <div id="message-section" {% if not logged_in %}style="display: none;"{% endif %}>
+        <div id="message-section" style="display: none;">
             <h1>Send WhatsApp Message</h1>
             <form id="message-form">
                 <label for="group_names">Group Names (comma-separated):</label><br>
@@ -30,26 +30,28 @@
     <script>
         function openWhatsAppWeb() {
             document.getElementById('login-status').innerText = 'Waiting for WhatsApp login...';
-            window.open('https://web.whatsapp.com/', '_blank');
-            checkLoginStatus();
+            $.post('/login', function(data) {
+                if (data.success) {
+                    checkLoginStatus();
+                }
+            });
         }
 
         function checkLoginStatus() {
-            // Simulate checking if WhatsApp is logged in
-            setTimeout(() => {
-                $.post('/', { login: true }, function(data) {
-                    if (data.success) {
+            setInterval(function() {
+                $.get('/check_login', function(data) {
+                    if (data.logged_in) {
                         document.getElementById('login-status').innerText = 'Successfully Logged In!';
                         document.getElementById('login-section').style.display = 'none';
                         document.getElementById('message-section').style.display = 'block';
                     }
                 });
-            }, 5000);  // Simulating 5 seconds delay, adjust as necessary
+            }, 5000);  // Check every 5 seconds
         }
 
         $('#message-form').submit(function(e) {
             e.preventDefault();
-            $.post('/', $(this).serialize() + '&send_message=true', function(data) {
+            $.post('/send_message', $(this).serialize(), function(data) {
                 if (data.success) {
                     $('#message-status').text(data.message);
                 }
