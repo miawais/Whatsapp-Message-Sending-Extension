@@ -3,59 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Message Sender</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>WhatsApp Web Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="login-screen" id="login-screen">
-            <h1>Login with WhatsApp</h1>
-            <button id="login-button" onclick="login()">Login to WhatsApp</button>
-            <p id="status">Waiting for WhatsApp Login...</p>
+        <div id="login-section" {% if logged_in %}style="display: none;"{% endif %}>
+            <h1>Login to WhatsApp</h1>
+            <p id="login-status">Click below to login to WhatsApp</p>
+            <button id="login-button" onclick="openWhatsAppWeb()">Login to WhatsApp</button>
         </div>
-        <div class="message-screen" id="message-screen" style="display: none;">
-            <h1>Send WhatsApp Messages</h1>
-            <label for="groups">Group Names (one per line):</label>
-            <textarea id="groups" rows="10"></textarea>
-            <label for="message">Message:</label>
-            <textarea id="message" rows="5"></textarea>
-            <button onclick="sendMessage()">Send Message</button>
+        <div id="message-section" {% if not logged_in %}style="display: none;"{% endif %}>
+            <h1>Send WhatsApp Message</h1>
+            <form id="message-form">
+                <label for="group_names">Group Names (comma-separated):</label><br>
+                <input type="text" id="group_names" name="group_names" required><br><br>
+                <label for="message">Message:</label><br>
+                <textarea id="message" name="message" rows="5" required></textarea><br><br>
+                <button type="submit">Send Message</button>
+            </form>
+            <p id="message-status"></p>
         </div>
     </div>
+
     <script>
-        async function login() {
-            const response = await fetch('/login', { method: 'POST' });
-            const result = await response.json();
-            if (result.status === 'waiting') {
-                document.getElementById('status').innerText = 'Waiting for WhatsApp Login...';
-                checkLogin();
-            }
+        function openWhatsAppWeb() {
+            document.getElementById('login-status').innerText = 'Waiting for WhatsApp login...';
+            window.open('https://web.whatsapp.com/', '_blank');
+            checkLoginStatus();
         }
 
-        async function checkLogin() {
-            const response = await fetch('/check_login', { method: 'POST' });
-            const result = await response.json();
-            if (result.status === 'logged_in') {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('message-screen').style.display = 'block';
-            } else {
-                setTimeout(checkLogin, 2000);
-            }
+        function checkLoginStatus() {
+            // Simulate checking if WhatsApp is logged in
+            setTimeout(() => {
+                $.post('/', { login: true }, function(data) {
+                    if (data.success) {
+                        document.getElementById('login-status').innerText = 'Successfully Logged In!';
+                        document.getElementById('login-section').style.display = 'none';
+                        document.getElementById('message-section').style.display = 'block';
+                    }
+                });
+            }, 5000);  // Simulating 5 seconds delay, adjust as necessary
         }
 
-        async function sendMessage() {
-            const groups = document.getElementById('groups').value.split('\n').filter(line => line.trim() !== '');
-            const message = document.getElementById('message').value;
-            const response = await fetch('/send_message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ groups, message })
+        $('#message-form').submit(function(e) {
+            e.preventDefault();
+            $.post('/', $(this).serialize() + '&send_message=true', function(data) {
+                if (data.success) {
+                    $('#message-status').text(data.message);
+                }
             });
-            const result = await response.json();
-            if (result.status === 'success') {
-                alert('Messages sent successfully!');
-            }
-        }
+        });
     </script>
 </body>
 </html>
